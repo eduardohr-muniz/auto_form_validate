@@ -1,4 +1,4 @@
-library auto_form;
+library auto_form_validate;
 
 export 'package:flutter/src/services/text_input.dart';
 export './form_controller.dart';

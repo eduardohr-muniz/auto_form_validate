@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'dart:ui';
-import 'package:auto_form/auto_form.dart';
+import 'package:auto_form_validate/auto_form_validate.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 
 bool _alreadyFocus = false;
 Timer? _timer;

@@ -30,7 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  auto_form:
+  auto_form_validate:
     path: ../
 
   # The following adds the Cupertino Icons font to your application.

@@ -1,6 +1,6 @@
 import 'dart:developer';
 
-import 'package:auto_form/form_controller.dart';
+import 'package:auto_form_validate/auto_form_validate.dart';
 import 'package:flutter/material.dart';
 
 void main() {

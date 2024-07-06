@@ -27,13 +27,13 @@ Streamline your Flutter app's form management with Auto Form for enhanced produc
 ## Installation
 
 ```bash
-flutter pub add auto_form
+flutter pub add auto_form_validate
 ```
 ##### or
 This will add a line like this to your package's pubspec.yaml (and run an implicit flutter pub get):
 dependencies:
 ```bash
-auto_form: ^1.0.0
+auto_form_validate: ^1.0.0
 ```
 # Start
 1. Create class and **extends** by **FormController**
@@ -46,7 +46,7 @@ auto_form: ^1.0.0
 
 #### Class Example
 ```dart
-import 'package:auto_form/form_controller.dart';
+import 'package:auto_form_validate/form_controller.dart';
 
 class PhoneMandatory extends FormController {
   PhoneMandatory(super.context);
@@ -120,8 +120,8 @@ class _HomePageState extends State<HomePage> {
 
 ## Contributions
 
-<a href="https://github.com/eduardohr-muniz/auto_form/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=eduardohr-muniz/auto_form" />
+<a href="https://github.com/eduardohr-muniz/auto_form_validate/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=eduardohr-muniz/auto_form_validate" />
 </a>
 
 Made with [contrib.rocks](https://contrib.rocks).
