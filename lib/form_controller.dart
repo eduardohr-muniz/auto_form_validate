@@ -173,7 +173,7 @@ abstract class FormController {
   }
 }
 
-class AutoFormFild extends StatefulWidget {
+class AutoTextFormField extends StatefulWidget {
   final TextEditingController? controller;
   final String? initialValue;
   final FocusNode? focusNode;
@@ -244,7 +244,7 @@ class AutoFormFild extends StatefulWidget {
   final bool canRequestFocus;
   final FormController? formController;
 
-  const AutoFormFild({
+  const AutoTextFormField({
     super.key,
     this.controller,
     this.initialValue,
@@ -318,10 +318,18 @@ class AutoFormFild extends StatefulWidget {
   });
 
   @override
-  State<AutoFormFild> createState() => _AutoFormFildState();
+  State<AutoTextFormField> createState() => _AutoTextFormFieldState();
 }
 
-class _AutoFormFildState extends State<AutoFormFild> {
+class _AutoTextFormFieldState extends State<AutoTextFormField> {
+  late final _focusNode = widget.formController?._getFocusNode(widget.focusNode);
+
+  @override
+  void dispose() {
+    _focusNode?.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return TextFormField(
@@ -332,7 +340,7 @@ class _AutoFormFildState extends State<AutoFormFild> {
         }
         return widget.initialValue;
       }(),
-      focusNode: widget.focusNode ?? widget.formController?._getFocusNode(widget.focusNode),
+      focusNode: _focusNode,
       decoration: widget.decoration,
       keyboardType: widget.keyboardType ?? widget.formController?.textInputType,
       textCapitalization: widget.textCapitalization,

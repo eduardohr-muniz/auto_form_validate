@@ -46,7 +46,8 @@ class _HomePageState extends State<HomePage> {
           key: formKey,
           child: Column(
             children: [
-              AutoFormFild(
+              //👋
+              AutoTextFormField(
                 formController: PhoneMandatory(context),
                 onChanged: (value) => phone = value,
               ),
