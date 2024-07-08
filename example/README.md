@@ -1,28 +1,13 @@
 
-# ✅ AUTO FORM ❌
+# ✅ AUTO FORM VALIDATE ❌
 ## Streamlining Form Management and Input Handling
-Auto Form simplifies form management in Flutter applications by providing intuitive input handling and validation.
+Auto Form  validate simplifies form management in Flutter applications by providing intuitive input handling and validation.
 
 It ensures seamless integration with Flutter's form widgets, enhancing user input experiences while maintaining robust validation and formatting functionalities.
 
 With Auto Form, managing forms becomes straightforward, accelerating development and ensuring data integrity throughout your application.
 
 Streamline your Flutter app's form management with Auto Form for enhanced productivity and user satisfaction.
-
-
-
-
-
-
-Auto Form simplifies form management in Flutter applications by providing intuitive input handling and validation.
-
-It ensures seamless integration with Flutter's form widgets, enhancing user input experiences while maintaining robust validation and formatting functionalities.
-
-With Auto Form, managing forms becomes straightforward, accelerating development and ensuring data integrity throughout your application.
-
-Streamline your Flutter app's form management with Auto Form for enhanced productivity and user satisfaction.
-
-
 
 ## Installation
 
@@ -33,7 +18,7 @@ flutter pub add auto_form_validate
 This will add a line like this to your package's pubspec.yaml (and run an implicit flutter pub get):
 dependencies:
 ```bash
-auto_form_validate: ^1.0.0
+auto_form_validate: ^1.0.1
 ```
 # Start
 1. Create class and **extends** by **FormController**
@@ -42,7 +27,7 @@ auto_form_validate: ^1.0.0
 **validator:** A function that validates input values. Returns a string error message or null for valid input.
 **regexFilter:** A regular expression that defines allowed characters for input validation.
 **formatters:** A list of string masks used to format input strings, such as phone numbers or dates.
-**textInputType:** Specifies the type of keyboard input for text fields, such as email address, phone
+**textInputType:** Specifies the type of keyboard input for text fields, such as email address, phone.
 
 #### Class Example
 ```dart
@@ -97,7 +82,8 @@ class _HomePageState extends State<HomePage> {
           key: formKey,
           child: Column(
             children: [
-              AutoFormFild(
+              //👋
+              AutoTextFormFild(
                 formController: PhoneMandatory(context),
                 onChanged: (value) => phone = value,
               ),

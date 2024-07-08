@@ -18,7 +18,7 @@ flutter pub add auto_form_validate
 This will add a line like this to your package's pubspec.yaml (and run an implicit flutter pub get):
 dependencies:
 ```bash
-auto_form_validate: ^1.0.0
+auto_form_validate: ^1.0.1
 ```
 # Start
 1. Create class and **extends** by **FormController**
@@ -27,7 +27,7 @@ auto_form_validate: ^1.0.0
 **validator:** A function that validates input values. Returns a string error message or null for valid input.
 **regexFilter:** A regular expression that defines allowed characters for input validation.
 **formatters:** A list of string masks used to format input strings, such as phone numbers or dates.
-**textInputType:** Specifies the type of keyboard input for text fields, such as email address, phone
+**textInputType:** Specifies the type of keyboard input for text fields, such as email address, phone.
 
 #### Class Example
 ```dart
@@ -82,7 +82,8 @@ class _HomePageState extends State<HomePage> {
           key: formKey,
           child: Column(
             children: [
-              AutoFormFild(
+              //👋
+              AutoTextFormField(
                 formController: PhoneMandatory(context),
                 onChanged: (value) => phone = value,
               ),
