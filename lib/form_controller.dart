@@ -157,6 +157,7 @@ abstract class FormController {
   }
 
   FocusNode? _getFocusNode(FocusNode? focusNode) {
+    if (_focusNode != null) return _focusNode;
     _focusNode = focusNode ?? FocusNode();
     return _focusNode;
   }
@@ -322,7 +323,13 @@ class AutoTextFormField extends StatefulWidget {
 }
 
 class _AutoTextFormFieldState extends State<AutoTextFormField> {
-  late final _focusNode = widget.formController?._getFocusNode(widget.focusNode);
+  late final FocusNode? _focusNode;
+
+  @override
+  void initState() {
+    _focusNode = widget.formController?._getFocusNode(widget.focusNode) ?? widget.focusNode;
+    super.initState();
+  }
 
   @override
   void dispose() {
