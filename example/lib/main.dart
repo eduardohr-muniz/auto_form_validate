@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:auto_form_validate/auto_form_validate.dart';
+import 'package:example/pages/tabs_form_page.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -18,7 +19,12 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const HomePage(),
+      // home: const HomePage(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const HomePage(),
+        '/tabs': (context) => const TabsFormPage(),
+      },
     );
   }
 }
@@ -33,6 +39,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final formKey = GlobalKey<FormState>();
   String phone = '';
+  final phoneEC = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +55,15 @@ class _HomePageState extends State<HomePage> {
             children: [
               //👋
               AutoTextFormField(
-                formController: PhoneMandatory(context),
+                decoration: const InputDecoration(labelText: 'Document BR'),
+                formController: CpfCnpjValidator(),
+                controller: phoneEC,
+                onChanged: (value) => phone = value,
+              ),
+
+              AutoTextFormField(
+                decoration: const InputDecoration(labelText: 'Text Mandatory*'),
+                formController: Mandatory(),
                 onChanged: (value) => phone = value,
               ),
               const SizedBox(height: 20),
@@ -67,9 +82,7 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class PhoneMandatory extends FormController {
-  PhoneMandatory(super.context);
-
+class CpfCnpjValidator extends FormController {
   @override
   String? Function(String? value)? get validator => (value) {
         if (value == null || value.isEmpty) {
@@ -79,11 +92,24 @@ class PhoneMandatory extends FormController {
       };
 
   @override
-  List<String> get formaters => ["(##) ####-####"];
+  List<String> get formaters => [
+        "###.###.###-##",
+        "##.###.###/####-##",
+      ];
 
   @override
   TextInputType? get textInputType => TextInputType.number;
 
   @override
   RegExp get regexFilter => RegExp(r'[0-9]');
+}
+
+class Mandatory extends FormController {
+  @override
+  String? Function(String? value)? get validator => (value) {
+        if (value == null || value.isEmpty) {
+          return 'This field is required';
+        }
+        return null;
+      };
 }

@@ -1,12 +1,10 @@
 import 'dart:async';
-import 'dart:ui';
-import 'package:auto_form_validate/auto_form_validate.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
-bool _alreadyFocus = false;
 Timer? _timer;
+bool _alreadyFocus = false;
 
 /// Manages form validation and input formatting for a specific form.
 ///
@@ -17,7 +15,7 @@ Timer? _timer;
 /// Example usage:
 /// ```dart
 /// class MyFormController extends FormController {
-///   // Example: Define a validator function
+///    Example: Define a validator function
 ///   @override
 ///   String? Function(String? value)? get validator => (value) {
 ///     if (value == null || value.isEmpty) {
@@ -26,28 +24,26 @@ Timer? _timer;
 ///     return null; // Valid input
 ///   };
 ///
-///   // Example: Define a regular expression filter
+///    //Example: Define a regular expression filter
 ///   @override
 ///   RegExp get regexFilter => RegExp(r'[a-zA-Z0-9]');
 ///
-///   // Example: Define a list of formatters for input masking
+///    //Example: Define a list of formatters for input masking
 ///   @override
 ///   List<String> get formatters => [
 ///     "(##) ####-####", // Example phone number mask
 ///   ];
 ///
-///   // Example: Define the type of keyboard input for text fields
+///   Example: Define the type of keyboard input for text fields
 ///   @override
 ///   TextInputType? get textInputType => TextInputType.number;
 /// }
 /// ```
 ///
 abstract class FormController {
-  BuildContext context;
-  FormController(this.context);
+  late final helper = FormControllerHelper(this);
 
-  FocusNode? _focusNode;
-
+  /// [validator]
   /// A function that validates the input value.
   ///
   /// By default, this returns `null`, indicating that there is no validation.
@@ -71,6 +67,7 @@ abstract class FormController {
   ///
   String? Function(String? value)? get validator => null;
 
+  /// [regexFilter]
   /// A regular expression that defines the allowed characters for input.
   ///
   /// By default, this allows any combination of letters and numbers.
@@ -90,8 +87,9 @@ abstract class FormController {
   /// This regular expression can be adjusted to restrict the input to specific character sets
   /// (e.g., alphanumeric only, letters and numbers with hyphens, etc.).
   ///
-  RegExp get regexFilter => RegExp(r'[a-zA-Z0-9]');
+  RegExp get regexFilter => RegExp(r'[\s\S]');
 
+  /// [formaters]
   /// A string mask to format input strings.
   ///
   /// Example:
@@ -103,9 +101,9 @@ abstract class FormController {
   /// ```
   /// This example demonstrates how to define and use a string mask for formatting input strings,
   /// such as phone numbers, dates, or other structured data.
-  ///
   List<String> get formaters => [];
 
+  /// [textInputType]
   /// Specifies the type of keyboard input for text fields.
   ///
   /// Example:
@@ -120,298 +118,140 @@ abstract class FormController {
   ///
   TextInputType? get textInputType => null;
 
-  List<TextInputFormatter>? _buildTextInputFormatters() {
-    List<String> formaters = this.formaters;
-    formaters.sort((a, b) => a.length.compareTo(b.length));
-    if (formaters.isEmpty) return null;
-    return [
+  /// Custom text input formatters.
+  List<TextInputFormatter> get customFormatters => [];
+
+  static bool isEmpty(String? value) => value == null || value.trim().isEmpty;
+}
+
+class FormControllerHelper {
+  FormControllerHelper(this.formController);
+  final FormController formController;
+
+  FocusNode? _focusNode;
+
+  List<TextInputFormatter>? _masks;
+  MaskTextInputFormatter? get mask => _masks?.first as MaskTextInputFormatter;
+  List<String> _formaters = [];
+  String _currentMask = '';
+
+  List<TextInputFormatter> buildFormatters({String? initialValue}) {
+    if (_masks != null) return _masks!;
+    _buildTextInputFormatters(initialValue: initialValue);
+    return _masks ?? [];
+  }
+
+  List<TextInputFormatter>? _buildTextInputFormatters({String? initialValue}) {
+    if (_masks != null && _masks!.isNotEmpty) return _masks;
+
+    if (formController.customFormatters.isNotEmpty) {
+      _masks = formController.customFormatters;
+      return formController.customFormatters;
+    }
+
+    _formaters = formController.formaters;
+
+    _formaters.sort((a, b) {
+      final initialLength = (initialValue ?? '').replaceAll(RegExp(r'[^a-zA-Z0-9]'), '').length;
+      final aClean = a.replaceAll(RegExp(r'[^#]'), '');
+      final bClean = b.replaceAll(RegExp(r'[^#]'), '');
+
+      if (aClean.length < initialLength && bClean.length >= initialLength) return 1;
+      if (aClean.length >= initialLength && bClean.length < initialLength) return -1;
+      return aClean.length.compareTo(bClean.length);
+    });
+
+    if (_formaters.length > 1) {
+      for (var i = _formaters.length - 2; i >= 0; i--) {
+        _formaters[i] = '${_formaters[i]}#';
+      }
+    }
+
+    if (_formaters.isEmpty) {
+      return [
+        FilteringTextInputFormatter.allow(formController.regexFilter),
+      ];
+    }
+
+    _currentMask = _formaters.first;
+    _masks = [
       MaskTextInputFormatter(
-        mask: formaters.first,
-        filter: {"#": textInputType != null && textInputType == TextInputType.number ? RegExp(r'[0-9]') : regexFilter},
+        mask: _formaters.first,
+        filter: {
+          '#': formController.textInputType == TextInputType.number ? RegExp('[0-9]') : formController.regexFilter,
+        },
       )
     ];
+
+    return _masks;
+  }
+
+  String formatValue({required String value}) {
+    return _maskUltisToString(value, buildFormatters(initialValue: value).first);
   }
 
   static String _maskUltisToString(String? value, TextInputFormatter? mask) {
-    if (mask == null) return value ?? "";
-    TextInputFormatter? textInputFormatter;
-    // final lenght = value.length;
-    textInputFormatter = mask;
-    // try {
-    //   if (mask.onlenghtMaskChange != null && lenght >= mask.onlenghtMaskChange!) textInputFormatter = mask.inpuFormatters![1];
-    // } catch (_) {
-    //   textInputFormatter = mask.inpuFormatters![0];
-    // }
-    final ec = TextEditingController(text: value);
-    ec.value = textInputFormatter.formatEditUpdate(ec.value, ec.value);
-    final result = ec.text;
-    ec.dispose();
+    if (mask == null) return value ?? '';
+    final controller = TextEditingController(text: value);
+    controller.value = mask.formatEditUpdate(controller.value, controller.value);
+    final result = controller.text;
+    controller.dispose();
     return result;
   }
 
-  String? _validate(String? value) {
-    String? error;
-    error = validator?.call(value);
+  String? validate(String? value) {
+    final error = formController.validator?.call(value);
     _requestFocusOnError(isError: error, focusNode: _focusNode);
     return error;
   }
 
-  FocusNode? _getFocusNode(FocusNode? focusNode) {
-    if (_focusNode != null) return _focusNode;
-    _focusNode = focusNode ?? FocusNode();
+  void updateMask({required String value, required TextEditingController controller, required RegExp regexFilter, TextInputType? textInputType}) {
+    final List<int> lenghts = _formaters.map((e) => e.length).toList();
+    if (lenghts.any((e) => value.length < e) == false) return;
+
+    final updatedMask = _formaters.firstWhere((mask) => mask.length > value.length, orElse: () => '');
+
+    if (value.length - 1 == _formaters.first.length && _currentMask != _formaters.first) {
+      _currentMask = _formaters.first;
+      controller.value = mask!.updateMask(
+        mask: _formaters.first,
+        filter: {
+          "#": textInputType != null && textInputType == TextInputType.number ? RegExp(r'[0-9]') : regexFilter
+        },
+      );
+
+      return;
+    }
+
+    if (updatedMask.isEmpty || updatedMask == _currentMask) return;
+
+    if (value.length < updatedMask.length) {
+      _currentMask = updatedMask;
+      controller.value = mask!.updateMask(
+        mask: updatedMask,
+        filter: {
+          "#": textInputType != null && textInputType == TextInputType.number ? RegExp(r'[0-9]') : regexFilter
+        },
+      );
+      return;
+    }
+  }
+
+  FocusNode? prepareFocusNode(FocusNode? focusNode) {
+    _focusNode ??= focusNode ?? FocusNode();
     return _focusNode;
   }
 
-  static void _requestFocusOnError({required String? isError, required FocusNode? focusNode}) {
-    if (_alreadyFocus == false && isError != null) {
+  void _requestFocusOnError({required String? isError, required FocusNode? focusNode}) {
+    if (!_alreadyFocus && isError != null) {
       _alreadyFocus = true;
-      focusNode?.requestFocus();
+      Future.delayed(const Duration(milliseconds: 100), () {
+        focusNode?.requestFocus();
+      });
     }
     _timer?.cancel();
     _timer = Timer(const Duration(milliseconds: 100), () {
       _alreadyFocus = false;
     });
-  }
-}
-
-class AutoTextFormField extends StatefulWidget {
-  final TextEditingController? controller;
-  final String? initialValue;
-  final FocusNode? focusNode;
-  final InputDecoration? decoration;
-  final TextInputType? keyboardType;
-  final TextCapitalization textCapitalization;
-  final TextInputAction? textInputAction;
-  final TextStyle? style;
-  final StrutStyle? strutStyle;
-  final TextDirection? textDirection;
-  final TextAlign textAlign;
-  final TextAlignVertical? textAlignVertical;
-  final bool autofocus;
-  final bool readOnly;
-  final bool? showCursor;
-  final String obscuringCharacter;
-  final bool obscureText;
-  final bool autocorrect;
-  final SmartDashesType? smartDashesType;
-  final SmartQuotesType? smartQuotesType;
-  final bool enableSuggestions;
-  final MaxLengthEnforcement? maxLengthEnforcement;
-  final int? maxLines;
-  final int? minLines;
-  final bool expands;
-  final int? maxLength;
-  final void Function(String)? onChanged;
-  final void Function()? onTap;
-  final bool onTapAlwaysCalled;
-  final void Function(PointerDownEvent)? onTapOutside;
-  final void Function()? onEditingComplete;
-  final void Function(String)? onFieldSubmitted;
-  final void Function(String?)? onSaved;
-  final String? Function(String?)? validator;
-  final List<TextInputFormatter>? inputFormatters;
-  final bool? enabled;
-  final bool? ignorePointers;
-  final double cursorWidth;
-  final double? cursorHeight;
-  final Radius? cursorRadius;
-  final Color? cursorColor;
-  final Color? cursorErrorColor;
-  final Brightness? keyboardAppearance;
-  final EdgeInsets scrollPadding;
-  final bool? enableInteractiveSelection;
-  final TextSelectionControls? selectionControls;
-  final Widget? Function(BuildContext, {required int currentLength, required bool isFocused, required int? maxLength})? buildCounter;
-  final ScrollPhysics? scrollPhysics;
-  final Iterable<String>? autofillHints;
-  final AutovalidateMode? autovalidateMode;
-  final ScrollController? scrollController;
-  final String? restorationId;
-  final bool enableIMEPersonalizedLearning;
-  final MouseCursor? mouseCursor;
-  final Widget Function(BuildContext, EditableTextState)? contextMenuBuilder;
-  final SpellCheckConfiguration? spellCheckConfiguration;
-  final TextMagnifierConfiguration? magnifierConfiguration;
-  final UndoHistoryController? undoController;
-  final void Function(String, Map<String, dynamic>)? onAppPrivateCommand;
-  final bool? cursorOpacityAnimates;
-  final BoxHeightStyle selectionHeightStyle;
-  final BoxWidthStyle selectionWidthStyle;
-  final DragStartBehavior dragStartBehavior;
-  final ContentInsertionConfiguration? contentInsertionConfiguration;
-  final WidgetStatesController? statesController;
-  final Clip clipBehavior;
-  final bool scribbleEnabled;
-  final bool canRequestFocus;
-  final FormController? formController;
-
-  const AutoTextFormField({
-    super.key,
-    this.controller,
-    this.initialValue,
-    this.focusNode,
-    this.decoration,
-    this.keyboardType,
-    this.textCapitalization = TextCapitalization.none,
-    this.textInputAction,
-    this.style,
-    this.strutStyle,
-    this.textDirection,
-    this.textAlign = TextAlign.start,
-    this.textAlignVertical,
-    this.autofocus = false,
-    this.readOnly = false,
-    this.showCursor,
-    this.obscuringCharacter = '•',
-    this.obscureText = false,
-    this.autocorrect = true,
-    this.smartDashesType,
-    this.smartQuotesType,
-    this.enableSuggestions = true,
-    this.maxLengthEnforcement,
-    this.maxLines = 1,
-    this.minLines,
-    this.expands = false,
-    this.maxLength,
-    this.onChanged,
-    this.onTap,
-    this.onTapAlwaysCalled = false,
-    this.onTapOutside,
-    this.onEditingComplete,
-    this.onFieldSubmitted,
-    this.onSaved,
-    this.validator,
-    this.inputFormatters,
-    this.enabled,
-    this.ignorePointers,
-    this.cursorWidth = 2.0,
-    this.cursorHeight,
-    this.cursorRadius,
-    this.cursorColor,
-    this.cursorErrorColor,
-    this.keyboardAppearance,
-    this.scrollPadding = const EdgeInsets.all(20.0),
-    this.enableInteractiveSelection,
-    this.selectionControls,
-    this.buildCounter,
-    this.scrollPhysics,
-    this.autofillHints,
-    this.autovalidateMode,
-    this.scrollController,
-    this.restorationId,
-    this.mouseCursor,
-    this.contextMenuBuilder,
-    this.spellCheckConfiguration,
-    this.magnifierConfiguration,
-    this.undoController,
-    this.onAppPrivateCommand,
-    this.cursorOpacityAnimates,
-    this.selectionHeightStyle = BoxHeightStyle.tight,
-    this.selectionWidthStyle = BoxWidthStyle.tight,
-    this.dragStartBehavior = DragStartBehavior.start,
-    this.contentInsertionConfiguration,
-    this.statesController,
-    this.clipBehavior = Clip.hardEdge,
-    this.scribbleEnabled = true,
-    this.canRequestFocus = true,
-    this.enableIMEPersonalizedLearning = true,
-    this.formController,
-  });
-
-  @override
-  State<AutoTextFormField> createState() => _AutoTextFormFieldState();
-}
-
-class _AutoTextFormFieldState extends State<AutoTextFormField> {
-  late final FocusNode? _focusNode;
-
-  @override
-  void initState() {
-    _focusNode = widget.formController?._getFocusNode(widget.focusNode) ?? widget.focusNode;
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _focusNode?.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      controller: widget.controller,
-      initialValue: () {
-        if (widget.formController != null && widget.formController!.formaters.isNotEmpty) {
-          return FormController._maskUltisToString(widget.initialValue, widget.formController!._buildTextInputFormatters()![0]);
-        }
-        return widget.initialValue;
-      }(),
-      focusNode: _focusNode,
-      decoration: widget.decoration,
-      keyboardType: widget.keyboardType ?? widget.formController?.textInputType,
-      textCapitalization: widget.textCapitalization,
-      textInputAction: widget.textInputAction,
-      style: widget.style,
-      strutStyle: widget.strutStyle,
-      textDirection: widget.textDirection,
-      textAlign: widget.textAlign,
-      textAlignVertical: widget.textAlignVertical,
-      autofocus: widget.autofocus,
-      readOnly: widget.readOnly,
-      showCursor: widget.showCursor,
-      obscuringCharacter: widget.obscuringCharacter,
-      obscureText: widget.obscureText,
-      autocorrect: widget.autocorrect,
-      smartDashesType: widget.smartDashesType,
-      smartQuotesType: widget.smartQuotesType,
-      enableSuggestions: widget.enableSuggestions,
-      maxLengthEnforcement: widget.maxLengthEnforcement,
-      maxLines: widget.maxLines,
-      minLines: widget.minLines,
-      expands: widget.expands,
-      maxLength: widget.maxLength,
-      onChanged: widget.onChanged,
-      onTap: widget.onTap,
-      onTapOutside: widget.onTapOutside,
-      onEditingComplete: widget.onEditingComplete,
-      onFieldSubmitted: widget.onFieldSubmitted,
-      onSaved: widget.onSaved,
-      validator: widget.validator ?? widget.formController?._validate,
-      inputFormatters: widget.inputFormatters ?? widget.formController?._buildTextInputFormatters(),
-      enabled: widget.enabled,
-      ignorePointers: widget.ignorePointers,
-      cursorWidth: widget.cursorWidth,
-      cursorHeight: widget.cursorHeight,
-      cursorRadius: widget.cursorRadius,
-      cursorColor: widget.cursorColor,
-      cursorOpacityAnimates: widget.cursorOpacityAnimates,
-      cursorErrorColor: widget.cursorErrorColor,
-      keyboardAppearance: widget.keyboardAppearance,
-      scrollPadding: widget.scrollPadding,
-      enableInteractiveSelection: widget.enableInteractiveSelection,
-      selectionControls: widget.selectionControls,
-      buildCounter: widget.buildCounter,
-      scrollPhysics: widget.scrollPhysics,
-      autofillHints: widget.autofillHints,
-      autovalidateMode: widget.autovalidateMode,
-      scrollController: widget.scrollController,
-      restorationId: widget.restorationId,
-      mouseCursor: widget.mouseCursor,
-      contextMenuBuilder: widget.contextMenuBuilder,
-      spellCheckConfiguration: widget.spellCheckConfiguration,
-      magnifierConfiguration: widget.magnifierConfiguration,
-      undoController: widget.undoController,
-      onAppPrivateCommand: widget.onAppPrivateCommand,
-      selectionHeightStyle: widget.selectionHeightStyle,
-      selectionWidthStyle: widget.selectionWidthStyle,
-      dragStartBehavior: widget.dragStartBehavior,
-      contentInsertionConfiguration: widget.contentInsertionConfiguration,
-      statesController: widget.statesController,
-      clipBehavior: widget.clipBehavior,
-      scribbleEnabled: widget.scribbleEnabled,
-      canRequestFocus: widget.canRequestFocus,
-      enableIMEPersonalizedLearning: widget.enableIMEPersonalizedLearning,
-    );
   }
 }
