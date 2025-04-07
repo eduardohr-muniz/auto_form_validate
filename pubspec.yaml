@@ -1,6 +1,6 @@
 name: auto_form_validate
 description: "Auto Form simplifies form management in Flutter apps by offering intuitive manipulation and input validation. It also supports the use of masks for custom data formatting, ensuring a more efficient and consistent user experience."
-version: 1.0.3
+version: 1.0.4
 homepage: "https://github.com/eduardohr-muniz/auto_form_validate"
 repository: "https://github.com/eduardohr-muniz/auto_form_validate"
 issue_tracker: "https://github.com/eduardohr-muniz/auto_form_validate/issues"
@@ -10,11 +10,13 @@ environment:
   flutter: ">=1.17.0"
 
 dependencies:
+  sentry_flutter: ^8.14.1
   flutter:
     sdk: flutter
   mask_text_input_formatter: ^2.9.0
 
 dev_dependencies:
+  sentry_dart_plugin: ^2.4.1
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
@@ -54,3 +56,9 @@ dev_dependencies:
 #
 # For details regarding fonts in packages, see
 # https://flutter.dev/custom-fonts/#from-packages
+
+sentry:
+  upload_debug_symbols: true
+  upload_source_maps: true
+  project: flutter
+  org: paip-food

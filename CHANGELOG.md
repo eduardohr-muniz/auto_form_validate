@@ -4,3 +4,6 @@
 
 ## 1.0.3
  * Add support for external packages ui
+
+## 1.0.4
+ * Add extension formatValue

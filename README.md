@@ -9,17 +9,7 @@ With Auto Form, managing forms becomes straightforward, accelerating development
 
 Streamline your Flutter app's form management with Auto Form for enhanced productivity and user satisfaction.
 
-## Installation
 
-```bash
-flutter pub add auto_form_validate
-```
-##### or
-This will add a line like this to your package's pubspec.yaml (and run an implicit flutter pub get):
-dependencies:
-```bash
-auto_form_validate: ^1.0.1
-```
 # Start
 1. Create class and **extends** by **FormController**
 > The FormController extension will provide you with these getters

@@ -187,10 +187,10 @@ class FormControllerHelper {
   }
 
   String formatValue({required String value}) {
-    return _maskUltisToString(value, buildFormatters(initialValue: value).first);
+    return maskUltisToString(value, buildFormatters(initialValue: value).first);
   }
 
-  static String _maskUltisToString(String? value, TextInputFormatter? mask) {
+  String maskUltisToString(String? value, TextInputFormatter? mask) {
     if (mask == null) return value ?? '';
     final controller = TextEditingController(text: value);
     controller.value = mask.formatEditUpdate(controller.value, controller.value);
@@ -253,5 +253,11 @@ class FormControllerHelper {
     _timer = Timer(const Duration(milliseconds: 100), () {
       _alreadyFocus = false;
     });
+  }
+}
+
+extension FormControllerExtension on FormController {
+  String formatValue({required String value}) {
+    return helper.maskUltisToString(value, helper.buildFormatters(initialValue: value).first);
   }
 }
