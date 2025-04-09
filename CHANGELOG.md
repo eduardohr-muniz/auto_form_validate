@@ -1,9 +1,15 @@
-## 0.0.1
+## 1.0.5
+ * Fix onChange AutoTextFormField
 
-* TODO: Describe initial release.
+## 1.0.4
+ * Add extension formatValue
 
 ## 1.0.3
  * Add support for external packages ui
 
-## 1.0.4
- * Add extension formatValue
+## 0.0.1
+ * TODO: Describe initial release.
+
+
+
+

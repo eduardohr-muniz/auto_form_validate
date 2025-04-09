@@ -1,6 +1,6 @@
 name: auto_form_validate
 description: "Auto Form simplifies form management in Flutter apps by offering intuitive manipulation and input validation. It also supports the use of masks for custom data formatting, ensuring a more efficient and consistent user experience."
-version: 1.0.4
+version: 1.0.5
 homepage: "https://github.com/eduardohr-muniz/auto_form_validate"
 repository: "https://github.com/eduardohr-muniz/auto_form_validate"
 issue_tracker: "https://github.com/eduardohr-muniz/auto_form_validate/issues"

@@ -222,7 +222,7 @@ class _AutoTextFormFieldState extends State<AutoTextFormField> {
         if (widget.formController != null && widget.formController!.formaters.length > 1) {
           widget.formController!.helper.updateMask(value: v, controller: widget.controller!, regexFilter: widget.formController!.regexFilter, textInputType: widget.formController!.textInputType);
         }
-        widget.onChanged == null ? null : (v) => widget.onChanged!(v);
+        widget.onChanged == null ? null : widget.onChanged!(v);
       },
       onTap: widget.onTap,
       onTapOutside: widget.onTapOutside,

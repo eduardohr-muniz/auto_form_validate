@@ -64,7 +64,9 @@ class _HomePageState extends State<HomePage> {
               AutoTextFormField(
                 decoration: const InputDecoration(labelText: 'Text Mandatory*'),
                 formController: Mandatory(),
-                onChanged: (value) => phone = value,
+                onChanged: (value) {
+                  phone = value;
+                },
               ),
               const SizedBox(height: 20),
               ElevatedButton(
