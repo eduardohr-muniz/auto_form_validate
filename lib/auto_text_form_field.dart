@@ -271,7 +271,6 @@ class _AutoTextFormFieldState extends State<AutoTextFormField> {
       contentInsertionConfiguration: widget.contentInsertionConfiguration,
       statesController: widget.statesController,
       clipBehavior: widget.clipBehavior,
-      scribbleEnabled: widget.scribbleEnabled,
       canRequestFocus: widget.canRequestFocus,
       enableIMEPersonalizedLearning: widget.enableIMEPersonalizedLearning,
       forceErrorText: widget.forceErrorText,
