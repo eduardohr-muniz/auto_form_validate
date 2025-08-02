@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
-Timer? _timer;
-bool _alreadyFocus = false;
+List<FocusNode> _errorFocusNodes = [];
 
 /// Manages form validation and input formatting for a specific form.
 ///
@@ -201,9 +200,11 @@ class FormControllerHelper {
     return result;
   }
 
-  String? validate(String? value) {
+  String? validate({String? value, required FocusNode focusNode}) {
     final error = formController.validator?.call(value);
-    _requestFocusOnError(isError: error, focusNode: _focusNode);
+    // Usa o focusNode passado ou o padrão
+    final targetFocusNode = focusNode;
+    _requestFocusOnError(isError: error, focusNode: targetFocusNode);
     return error;
   }
 
@@ -235,27 +236,50 @@ class FormControllerHelper {
     }
   }
 
-  FocusNode? prepareFocusNode(FocusNode? focusNode) {
+  FocusNode prepareFocusNode(FocusNode? focusNode) {
     _focusNode ??= focusNode ?? FocusNode();
-    return _focusNode;
+    return _focusNode!;
+  }
+
+  void resetErrorTracking() {
+    _errorFocusNodes.clear();
   }
 
   void _requestFocusOnError({required String? isError, required FocusNode? focusNode}) {
-    if (!_alreadyFocus && isError != null) {
-      _alreadyFocus = true;
-      Future.delayed(const Duration(milliseconds: 100), () {
-        focusNode?.requestFocus();
+    if (focusNode == null) return;
+
+    if (isError != null) {
+      if (!_errorFocusNodes.contains(focusNode)) {
+        _errorFocusNodes.add(focusNode);
+      }
+    } else {
+      _errorFocusNodes.remove(focusNode);
+    }
+
+    if (_errorFocusNodes.isNotEmpty) {
+      final firstErrorNode = _errorFocusNodes.first;
+
+      Future.microtask(() {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (firstErrorNode.canRequestFocus) {
+            if (firstErrorNode.context != null) {
+              FocusScope.of(firstErrorNode.context!).unfocus();
+            }
+            firstErrorNode.requestFocus();
+            _errorFocusNodes.clear();
+          }
+        });
       });
     }
-    _timer?.cancel();
-    _timer = Timer(const Duration(milliseconds: 100), () {
-      _alreadyFocus = false;
-    });
   }
 }
 
 extension FormControllerExtension on FormController {
   String formatValue({required String value}) {
     return helper.maskUltisToString(value, helper.buildFormatters(initialValue: value).first);
+  }
+
+  void resetErrorTracking() {
+    helper.resetErrorTracking();
   }
 }

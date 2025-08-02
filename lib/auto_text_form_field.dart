@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:ui';
 import 'package:auto_form_validate/form_controller.dart';
 import 'package:flutter/gestures.dart';
@@ -176,6 +177,15 @@ class _AutoTextFormFieldState extends State<AutoTextFormField> {
     }
   }
 
+  String? Function(String?)? _validator() {
+    if (widget.validator != null) return widget.validator;
+    if (widget.formController != null && _focusNode != null) {
+      return (v) => widget.formController?.helper.validate(value: v, focusNode: _focusNode);
+    }
+    if (widget.formController != null && _focusNode == null) log('🔍 [AutoTextFormField] Error: FormController != null && _focusNode == null');
+    return null;
+  }
+
   @override
   void dispose() {
     _focusNode?.dispose();
@@ -229,7 +239,7 @@ class _AutoTextFormFieldState extends State<AutoTextFormField> {
       onEditingComplete: widget.onEditingComplete,
       onFieldSubmitted: widget.onFieldSubmitted,
       onSaved: widget.onSaved,
-      validator: widget.validator ?? (v) => widget.formController?.helper.validate(v),
+      validator: _validator(),
       inputFormatters: widget.inputFormatters ?? widget.formController?.helper.buildFormatters(),
       enabled: widget.enabled,
       ignorePointers: widget.ignorePointers,
