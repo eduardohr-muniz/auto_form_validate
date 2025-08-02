@@ -187,7 +187,9 @@ class FormControllerHelper {
   }
 
   String formatValue({required String value}) {
-    return maskUltisToString(value, buildFormatters(initialValue: value).first);
+    final formatters = buildFormatters(initialValue: value);
+    if (formatters.isEmpty) return value;
+    return maskUltisToString(value, formatters.first);
   }
 
   String maskUltisToString(String? value, TextInputFormatter? mask) {
@@ -215,9 +217,7 @@ class FormControllerHelper {
       _currentMask = _formaters.first;
       controller.value = mask!.updateMask(
         mask: _formaters.first,
-        filter: {
-          "#": textInputType != null && textInputType == TextInputType.number ? RegExp(r'[0-9]') : regexFilter
-        },
+        filter: {"#": textInputType != null && textInputType == TextInputType.number ? RegExp(r'[0-9]') : regexFilter},
       );
 
       return;
@@ -229,9 +229,7 @@ class FormControllerHelper {
       _currentMask = updatedMask;
       controller.value = mask!.updateMask(
         mask: updatedMask,
-        filter: {
-          "#": textInputType != null && textInputType == TextInputType.number ? RegExp(r'[0-9]') : regexFilter
-        },
+        filter: {"#": textInputType != null && textInputType == TextInputType.number ? RegExp(r'[0-9]') : regexFilter},
       );
       return;
     }
