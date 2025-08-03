@@ -1,4 +1,6 @@
 import 'dart:async';
+
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
@@ -123,6 +125,25 @@ abstract class FormController {
   static bool isEmpty(String? value) => value == null || value.trim().isEmpty;
 }
 
+class _Mask {
+  final String maskImmutable;
+  final String mask;
+
+  _Mask({
+    required this.maskImmutable,
+    required this.mask,
+  });
+
+  _Mask copyWith({
+    String? mask,
+  }) {
+    return _Mask(
+      maskImmutable: maskImmutable,
+      mask: mask ?? this.mask,
+    );
+  }
+}
+
 class FormControllerHelper {
   FormControllerHelper(this.formController);
   final FormController formController;
@@ -131,8 +152,8 @@ class FormControllerHelper {
 
   List<TextInputFormatter>? _masks;
   MaskTextInputFormatter? get mask => _masks?.first as MaskTextInputFormatter;
-  List<String> _formaters = [];
-  String _currentMask = '';
+  List<_Mask> _formaters = [];
+  _Mask _currentMask = _Mask(maskImmutable: '', mask: '');
 
   List<TextInputFormatter> buildFormatters({String? initialValue}) {
     if (_masks != null) return _masks!;
@@ -148,12 +169,12 @@ class FormControllerHelper {
       return formController.customFormatters;
     }
 
-    _formaters = formController.formaters;
+    _formaters = formController.formaters.map((e) => _Mask(maskImmutable: e, mask: e)).toList();
 
     _formaters.sort((a, b) {
       final initialLength = (initialValue ?? '').replaceAll(RegExp(r'[^a-zA-Z0-9]'), '').length;
-      final aClean = a.replaceAll(RegExp(r'[^#]'), '');
-      final bClean = b.replaceAll(RegExp(r'[^#]'), '');
+      final aClean = a.maskImmutable.replaceAll(RegExp(r'[^#]'), '');
+      final bClean = b.maskImmutable.replaceAll(RegExp(r'[^#]'), '');
 
       if (aClean.length < initialLength && bClean.length >= initialLength) return 1;
       if (aClean.length >= initialLength && bClean.length < initialLength) return -1;
@@ -162,7 +183,8 @@ class FormControllerHelper {
 
     if (_formaters.length > 1) {
       for (var i = _formaters.length - 2; i >= 0; i--) {
-        _formaters[i] = '${_formaters[i]}#';
+        // _formaters[i] = '${_formaters[i]}#';
+        _formaters[i] = _formaters[i].copyWith(mask: '${_formaters[i].mask}#');
       }
     }
 
@@ -175,7 +197,7 @@ class FormControllerHelper {
     _currentMask = _formaters.first;
     _masks = [
       MaskTextInputFormatter(
-        mask: _formaters.first,
+        mask: _formaters.first.mask,
         filter: {
           '#': formController.textInputType == TextInputType.number ? RegExp('[0-9]') : formController.regexFilter,
         },
@@ -208,31 +230,51 @@ class FormControllerHelper {
     return error;
   }
 
+  String _cleanMask(String mask) {
+    return mask.replaceAll(RegExp(r'[^#]'), '');
+  }
+
+  String _cleanValue(String value) {
+    return value.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
+  }
+
   void updateMask({required String value, required TextEditingController controller, required RegExp regexFilter, TextInputType? textInputType}) {
-    final List<int> lenghts = _formaters.map((e) => e.length).toList();
-    if (lenghts.any((e) => value.length < e) == false) return;
+    // Extrair apenas números e letras do value
+    final valueClean = _cleanValue(value);
 
-    final updatedMask = _formaters.firstWhere((mask) => mask.length > value.length, orElse: () => '');
+    final nextMask = _formaters.firstWhereOrNull((mask) {
+      final maskHashtags = _cleanMask(mask.maskImmutable);
+      return maskHashtags.length > _cleanMask(_currentMask.maskImmutable).length;
+    });
 
-    if (value.length - 1 == _formaters.first.length && _currentMask != _formaters.first) {
-      _currentMask = _formaters.first;
-      controller.value = mask!.updateMask(
-        mask: _formaters.first,
-        filter: {"#": textInputType != null && textInputType == TextInputType.number ? RegExp(r'[0-9]') : regexFilter},
-      );
+    final previousMask = _formaters.firstWhereOrNull((mask) {
+      final maskHashtags = _cleanMask(mask.maskImmutable);
+      return _cleanMask(_currentMask.maskImmutable).length > maskHashtags.length;
+    });
 
-      return;
+    if (nextMask != null) {
+      if (valueClean.length > _cleanMask(_currentMask.maskImmutable).length) {
+        _currentMask = nextMask;
+        final newValue = mask!.updateMask(
+          mask: nextMask.mask,
+          filter: {"#": textInputType != null && textInputType == TextInputType.number ? RegExp(r'[0-9]') : regexFilter},
+        );
+        controller.value = newValue;
+        return;
+      }
     }
 
-    if (updatedMask.isEmpty || updatedMask == _currentMask) return;
-
-    if (value.length < updatedMask.length) {
-      _currentMask = updatedMask;
-      controller.value = mask!.updateMask(
-        mask: updatedMask,
-        filter: {"#": textInputType != null && textInputType == TextInputType.number ? RegExp(r'[0-9]') : regexFilter},
-      );
-      return;
+    if (previousMask != null) {
+      final previousMaskHashtags = _cleanMask(previousMask.maskImmutable);
+      if (valueClean.length == previousMaskHashtags.length) {
+        _currentMask = previousMask;
+        final newValue = mask!.updateMask(
+          mask: previousMask.mask,
+          filter: {"#": textInputType != null && textInputType == TextInputType.number ? RegExp(r'[0-9]') : regexFilter},
+        );
+        controller.value = newValue;
+        return;
+      }
     }
   }
 

@@ -54,12 +54,12 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             children: [
               //👋
-              AutoTextFormField(
-                decoration: const InputDecoration(labelText: 'Document BR'),
-                formController: CpfCnpjValidator(),
-                controller: phoneEC,
-                onChanged: (value) => phone = value,
-              ),
+              // AutoTextFormField(
+              //   decoration: const InputDecoration(labelText: 'Document BR'),
+              //   formController: CpfCnpjValidator(),
+              //   controller: phoneEC,
+              //   onChanged: (value) => phone = value,
+              // ),
 
               AutoTextFormField(
                 decoration: const InputDecoration(labelText: 'Text Mandatory*'),
@@ -67,6 +67,11 @@ class _HomePageState extends State<HomePage> {
                 onChanged: (value) {
                   phone = value;
                 },
+              ),
+              AutoTextFormField(
+                decoration: const InputDecoration(labelText: 'Text Mandatory*'),
+                formController: PhoneValidator(),
+                controller: phoneEC,
               ),
               const SizedBox(height: 20),
               ElevatedButton(
@@ -114,4 +119,26 @@ class Mandatory extends FormController {
         }
         return null;
       };
+}
+
+class PhoneValidator extends FormController {
+  @override
+  String? Function(String? value)? get validator => (value) {
+        if (value == null || value.isEmpty) {
+          return 'This field is required';
+        }
+        return null;
+      };
+
+  @override
+  List<String> get formaters => [
+        "(##) ####-####",
+        "(##)# ####-####",
+      ];
+
+  @override
+  TextInputType? get textInputType => TextInputType.number;
+
+  @override
+  RegExp get regexFilter => RegExp(r'[0-9]');
 }
