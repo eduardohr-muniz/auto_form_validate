@@ -142,6 +142,11 @@ class _Mask {
       mask: mask ?? this.mask,
     );
   }
+
+  @override
+  String toString() {
+    return 'maskImmutable: $maskImmutable, mask: $mask';
+  }
 }
 
 class FormControllerHelper {
@@ -238,7 +243,7 @@ class FormControllerHelper {
     return value.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
   }
 
-  void updateMask({required String value, required TextEditingController controller, required RegExp regexFilter, TextInputType? textInputType}) {
+  String? updateMask({required String value, required TextEditingController controller, required RegExp regexFilter, TextInputType? textInputType}) {
     // Extrair apenas números e letras do value
     final valueClean = _cleanValue(value);
 
@@ -259,8 +264,8 @@ class FormControllerHelper {
           mask: nextMask.mask,
           filter: {"#": textInputType != null && textInputType == TextInputType.number ? RegExp(r'[0-9]') : regexFilter},
         );
-        controller.value = newValue;
-        return;
+        Future.microtask(() => controller.value = newValue);
+        return newValue.text;
       }
     }
 
@@ -272,10 +277,11 @@ class FormControllerHelper {
           mask: previousMask.mask,
           filter: {"#": textInputType != null && textInputType == TextInputType.number ? RegExp(r'[0-9]') : regexFilter},
         );
-        controller.value = newValue;
-        return;
+        Future.microtask(() => controller.value = newValue);
+        return newValue.text;
       }
     }
+    return null;
   }
 
   FocusNode prepareFocusNode(FocusNode? focusNode) {
