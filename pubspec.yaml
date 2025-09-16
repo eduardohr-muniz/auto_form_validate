@@ -4,7 +4,7 @@ version: 2.0.2
 homepage: "https://github.com/eduardohr-muniz/auto_form_validate"
 repository: "https://github.com/eduardohr-muniz/auto_form_validate"
 issue_tracker: "https://github.com/eduardohr-muniz/auto_form_validate/issues"
-publish_to: "https://aspecta.ai/u/eduardohr-muniz"
+publish_to: "https://www.patreon.com/c/eduardohr_muniz"
 
 environment:
   sdk: ">=3.4.1 <4.0.0"
