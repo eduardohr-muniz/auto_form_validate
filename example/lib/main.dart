@@ -52,6 +52,7 @@ class _HomePageState extends State<HomePage> {
         child: Form(
           key: formKey,
           child: Column(
+            spacing: 20,
             children: [
               //👋
               // AutoTextFormField(
@@ -69,9 +70,13 @@ class _HomePageState extends State<HomePage> {
                 },
               ),
               AutoTextFormField(
-                decoration: const InputDecoration(labelText: 'Text Mandatory*'),
+                decoration: const InputDecoration(labelText: 'Phone Number*'),
                 formController: PhoneValidator(),
                 controller: phoneEC,
+              ),
+              AutoTextFormField(
+                decoration: const InputDecoration(labelText: 'Only Numbers*'),
+                formController: OnlyNumbers(),
               ),
               const SizedBox(height: 20),
               ElevatedButton(
@@ -135,6 +140,22 @@ class PhoneValidator extends FormController {
         "(##) ####-####",
         "(##)# ####-####",
       ];
+
+  @override
+  TextInputType? get textInputType => TextInputType.number;
+
+  @override
+  RegExp get regexFilter => RegExp(r'[0-9]');
+}
+
+class OnlyNumbers extends FormController {
+  @override
+  String? Function(String? value)? get validator => (value) {
+        if (value == null || value.isEmpty) {
+          return 'This field is required';
+        }
+        return null;
+      };
 
   @override
   TextInputType? get textInputType => TextInputType.number;

@@ -194,9 +194,10 @@ class FormControllerHelper {
     }
 
     if (_formaters.isEmpty) {
-      return [
+      _masks = [
         FilteringTextInputFormatter.allow(formController.regexFilter),
       ];
+      return _masks!;
     }
 
     _currentMask = _formaters.first;

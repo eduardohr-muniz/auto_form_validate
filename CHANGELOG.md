@@ -1,3 +1,7 @@
+## 2.0.3
+
+- Fix regex filter
+
 ## 2.0.2
 
 - Fix auto dispose focusNode
