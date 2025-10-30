@@ -1,3 +1,7 @@
+## 2.0.4
+
+- Fix FormController required when passing a controller, now it can be null
+
 ## 2.0.3
 
 - Fix regex filter

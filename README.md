@@ -525,7 +525,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### 🎉 **Happy Coding with Auto Form Validadte!** 🎉
 
-*Transform your Flutter app into a scalable, modular masterpiece* ✨
+*Validate your forms with ease* 🚀
 
 <div style={{textAlign: 'center', margin: '2rem 0'}}>
   <a href="https://github.com/eduardohr-muniz/auto_form_validate/graphs/contributors">
