@@ -173,7 +173,9 @@ class _AutoTextFormFieldState extends State<AutoTextFormField> {
 
   _handleInitalValueController() {
     if (widget.controller!.text.isNotEmpty) {
-      widget.controller!.text = widget.formController!.helper.formatValue(value: widget.controller!.text);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        widget.controller!.text = widget.formController?.helper.formatValue(value: widget.controller!.text) ?? widget.controller!.text;
+      });
     }
   }
 
