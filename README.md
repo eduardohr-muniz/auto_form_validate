@@ -521,3 +521,21 @@ This implementation shows how to create your own `MyTextFormField` that has the 
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+<div align="center">
+
+### 🎉 **Happy Coding with Auto Form Validadte!** 🎉
+
+*Transform your Flutter app into a scalable, modular masterpiece* ✨
+
+<div style={{textAlign: 'center', margin: '2rem 0'}}>
+  <a href="https://github.com/eduardohr-muniz/auto_form_validate/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=eduardohr-muniz/auto_form_validate" alt="Contributors" />
+  </a>
+  <p style={{marginTop: '1rem', fontSize: '0.9rem', color: 'var(--ifm-color-emphasis-600)'}}>
+    <strong>Made with <a href="https://contrib.rocks" target="_blank">contrib.rocks</a></strong>
+  </p>
+</div>
+
+</div>
+
+---
