@@ -8,6 +8,8 @@ A Flutter package that provides automatic form validation with smart focus manag
 - 📝 **Input Formatting**: Support for custom masks and formatters
 - 🔄 **Dynamic Validation**: Real-time validation with automatic error tracking
 - 🎨 **Flexible Integration**: Works with both custom widgets and standard TextFormField
+- 🎛️ **Generic Validation**: Support for validating any widget type (checkboxes, dropdowns, date pickers, etc.)
+- 🎭 **Material Design**: Error messages use Material Design theme styling
 - 🛡️ **Null Safety**: Fully null-safe implementation
 
 ## Quick Start
@@ -298,6 +300,98 @@ class CustomFormatterController extends FormController {
 }
 ```
 
+## Validating Non-Text Fields
+
+### Using CustomFormController and AutoFormFieldWrapper
+
+For validating non-text form fields like checkboxes, dropdowns, date pickers, etc., use `CustomFormController<T>` with `AutoFormFieldWrapper<T>`. This allows you to add validation to any widget type.
+
+### Checkbox Example
+
+```dart
+class CheckboxRequiredController extends CustomFormController<bool?> {
+  @override
+  String? Function(bool? value)? get validator => (value) {
+    if (value == null || value == false) {
+      return 'You must accept the terms';
+    }
+    return null;
+  };
+}
+
+// Usage
+AutoFormFieldWrapper<bool?>(
+  formController: CheckboxRequiredController(),
+  builder: (field) => Row(
+    children: [
+      Checkbox(
+        value: _isChecked,
+        onChanged: (value) {
+          setState(() {
+            _isChecked = value;
+          });
+          field.didChange(value);
+        },
+      ),
+      const Text('Accept terms and conditions'),
+    ],
+  ),
+)
+```
+
+### Dropdown Example
+
+```dart
+enum Status { active, inactive, pending }
+
+class StatusController extends CustomFormController<Status?> {
+  @override
+  String? Function(Status? value)? get validator => (value) {
+    if (value == null) {
+      return 'Please select a status';
+    }
+    return null;
+  };
+}
+
+// Usage
+AutoFormFieldWrapper<Status?>(
+  formController: StatusController(),
+  builder: (field) => DropdownButton<Status>(
+    value: _selectedStatus,
+    items: Status.values.map((status) {
+      return DropdownMenuItem(
+        value: status,
+        child: Text(status.name),
+      );
+    }).toList(),
+    onChanged: (value) {
+      setState(() {
+        _selectedStatus = value;
+      });
+      field.didChange(value);
+    },
+  ),
+)
+```
+
+### Date Picker Example
+
+```dart
+class DateController extends CustomFormController<DateTime?> {
+  @override
+  String? Function(DateTime? value)? get validator => (value) {
+    if (value == null) {
+      return 'Please select a date';
+    }
+    if (value.isBefore(DateTime.now())) {
+      return 'Date must be in the future';
+    }
+    return null;
+  };
+}
+```
+
 ## Creating Custom Components
 
 ### Creating Your Own TextFormField Implementation
@@ -493,6 +587,22 @@ This implementation shows how to create your own `MyTextFormField` that has the 
 | `formController` | `FormController?` | Form controller instance |
 | `focusNode` | `FocusNode?` | Custom focus node |
 | `validator` | `String? Function(String?)?` | Custom validator |
+
+### CustomFormController
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `validator` | `String? Function(T? value)?` | Generic validation function for any type |
+
+### AutoFormFieldWrapper
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `formController` | `CustomFormController<T>?` | Generic form controller instance |
+| `focusNode` | `FocusNode?` | Custom focus node |
+| `validator` | `String? Function(T? value)?` | Custom validator function |
+| `builder` | `Widget Function(FormFieldState<T> field)` | Widget builder function |
+| `errorWidget` | `Widget Function(String errorText)?` | Custom error widget builder |
 
 ### Methods
 

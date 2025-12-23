@@ -1,3 +1,10 @@
+## 2.1.0
+
+- Add `CustomFormController<T>` for generic validation of any type (dropdowns, checkboxes, etc.)
+- Add `AutoFormFieldWrapper<T>` to wrap any widget and add validation with Material Design error styling
+- Error messages now use Material Design theme styling consistent with TextFormField
+- Support for validating non-text form fields (checkboxes, dropdowns, date pickers, etc.)
+
 ## 2.0.4
 
 - Fix FormController required when passing a controller, now it can be null

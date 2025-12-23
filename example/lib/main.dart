@@ -1,7 +1,6 @@
 import 'dart:developer';
 
 import 'package:auto_form_validate/auto_form_validate.dart';
-import 'package:example/pages/tabs_form_page.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -23,7 +22,6 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => const HomePage(),
-        '/tabs': (context) => const TabsFormPage(),
       },
     );
   }
@@ -40,6 +38,7 @@ class _HomePageState extends State<HomePage> {
   final formKey = GlobalKey<FormState>();
   String phone = '';
   final phoneEC = TextEditingController();
+  bool? isChecked = false;
 
   @override
   Widget build(BuildContext context) {
@@ -76,13 +75,36 @@ class _HomePageState extends State<HomePage> {
               ),
               AutoTextFormField(
                 decoration: const InputDecoration(labelText: 'Only Numbers*'),
-                formController: OnlyNumbers(),
+                formController: OnlyNumbersValidator(),
+              ),
+              const SizedBox(height: 20),
+              // Exemplo com Checkbox usando CustomFormController
+              AutoFormFieldWrapper<bool?>(
+                formController: CheckboxRequiredValidator(),
+                builder: (field) => Row(
+                  children: [
+                    Checkbox(
+                      value: isChecked,
+                      onChanged: (value) {
+                        setState(() {
+                          isChecked = value;
+                        });
+                        field.didChange(value);
+                      },
+                    ),
+                    Text(
+                      'Accept terms and conditions',
+                      style: field.errorText != null ? const TextStyle(color: Colors.amber) : null,
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 20),
               ElevatedButton(
                   onPressed: () {
                     if (formKey.currentState!.validate()) {
                       log("Phone: $phone ✅");
+                      log("Checkbox: $isChecked ✅");
                     }
                   },
                   child: const Text("Validate")),
@@ -148,7 +170,7 @@ class PhoneValidator extends FormController {
   RegExp get regexFilter => RegExp(r'[0-9]');
 }
 
-class OnlyNumbers extends FormController {
+class OnlyNumbersValidator extends FormController {
   @override
   String? Function(String? value)? get validator => (value) {
         if (value == null || value.isEmpty) {
@@ -162,4 +184,15 @@ class OnlyNumbers extends FormController {
 
   @override
   RegExp get regexFilter => RegExp(r'[0-9]');
+}
+
+// Exemplo de CustomFormController para Checkbox
+class CheckboxRequiredValidator extends CustomFormController<bool?> {
+  @override
+  String? Function(bool? value)? get validator => (value) {
+        if (value == null || value == false) {
+          return 'You must accept the terms';
+        }
+        return null;
+      };
 }
