@@ -83,7 +83,8 @@ class _HomePageState extends State<HomePage> {
               // Exemplo com Checkbox usando CustomFormController
               AutoFormFieldWrapper<bool?>(
                 formController: CheckboxRequiredValidator(),
-                builder: (field) => Row(
+                // autovalidateMode: AutovalidateMode.,
+                builder: (field, didChange) => Row(
                   children: [
                     Checkbox(
                       value: isChecked,
@@ -91,13 +92,10 @@ class _HomePageState extends State<HomePage> {
                         setState(() {
                           isChecked = value;
                         });
-                        field.didChange(value);
+                        didChange(value); // Automatically calls field.didChange
                       },
                     ),
-                    Text(
-                      'Accept terms and conditions',
-                      style: field.errorText != null ? const TextStyle(color: Colors.amber) : null,
-                    ),
+                    const Text('Accept terms and conditions'),
                   ],
                 ),
               ),

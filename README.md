@@ -34,7 +34,7 @@ class _MyFormState extends State<MyForm> {
       child: Column(
         children: [
           AutoTextFormField(
-            formController: PhoneFormController(),
+            formController: PhoneValidator(),
             decoration: InputDecoration(
               labelText: 'Phone Number',
               border: OutlineInputBorder(),
@@ -42,7 +42,7 @@ class _MyFormState extends State<MyForm> {
           ),
           SizedBox(height: 16),
           AutoTextFormField(
-            formController: EmailFormController(),
+            formController: EmailValidator(),
             decoration: InputDecoration(
               labelText: 'Email',
               border: OutlineInputBorder(),
@@ -63,7 +63,7 @@ class _MyFormState extends State<MyForm> {
   }
 }
 
-class PhoneFormController extends FormController {
+class PhoneValidator extends FormController {
   @override
   String? Function(String? value)? get validator => (value) {
     if (value == null || value.isEmpty) {
@@ -81,7 +81,7 @@ class PhoneFormController extends FormController {
   TextInputType? get textInputType => TextInputType.phone;
 }
 
-class EmailFormController extends FormController {
+class EmailValidator extends FormController {
   @override
   String? Function(String? value)? get validator => (value) {
     if (value == null || value.isEmpty) {
@@ -125,7 +125,7 @@ class _MyFormState extends State<MyForm> {
               labelText: 'Name',
               border: OutlineInputBorder(),
             ),
-            validator: (value) => NameFormController().helper.validate(
+            validator: (value) => NameValidator().helper.validate(
               value: value,
               focusNode: _focusNode1,
             ),
@@ -137,7 +137,7 @@ class _MyFormState extends State<MyForm> {
               labelText: 'Email',
               border: OutlineInputBorder(),
             ),
-            validator: (value) => EmailFormController().helper.validate(
+            validator: (value) => EmailValidator().helper.validate(
               value: value,
               focusNode: _focusNode2,
             ),
@@ -164,7 +164,7 @@ class _MyFormState extends State<MyForm> {
   }
 }
 
-class NameFormController extends FormController {
+class NameValidator extends FormController {
   @override
   String? Function(String? value)? get validator => (value) {
     if (value == null || value.isEmpty) {
@@ -183,7 +183,7 @@ class NameFormController extends FormController {
 ### Basic Validation
 
 ```dart
-class BasicFormController extends FormController {
+class BasicValidator extends FormController {
   @override
   String? Function(String? value)? get validator => (value) {
     if (value == null || value.isEmpty) {
@@ -197,7 +197,7 @@ class BasicFormController extends FormController {
 ### Email Validation
 
 ```dart
-class EmailFormController extends FormController {
+class EmailValidator extends FormController {
   @override
   String? Function(String? value)? get validator => (value) {
     if (value == null || value.isEmpty) {
@@ -217,7 +217,7 @@ class EmailFormController extends FormController {
 ### Phone Number with Mask
 
 ```dart
-class PhoneFormController extends FormController {
+class PhoneValidator extends FormController {
   @override
   String? Function(String? value)? get validator => (value) {
     if (value == null || value.isEmpty) {
@@ -243,7 +243,7 @@ class PhoneFormController extends FormController {
 ### Custom Regex Filter
 
 ```dart
-class CustomFormController extends FormController {
+class CustomValidator extends FormController {
   @override
   String? Function(String? value)? get validator => (value) {
     if (value == null || value.isEmpty) {
@@ -262,7 +262,7 @@ class CustomFormController extends FormController {
 ### Multiple Masks
 
 ```dart
-class AdvancedFormController extends FormController {
+class AdvancedValidator extends FormController {
   @override
   List<String> get formaters => [
     "####-####",      // 8 digits
@@ -306,10 +306,14 @@ class CustomFormatterController extends FormController {
 
 For validating non-text form fields like checkboxes, dropdowns, date pickers, etc., use `CustomFormController<T>` with `AutoFormFieldWrapper<T>`. This allows you to add validation to any widget type.
 
+The `builder` function receives two parameters:
+- `field`: The `FormFieldState<T>` for accessing field state (like `field.value`, `field.errorText`)
+- `didChange`: A callback function that automatically calls `field.didChange()` - just call `didChange(newValue)` when the value changes
+
 ### Checkbox Example
 
 ```dart
-class CheckboxRequiredController extends CustomFormController<bool?> {
+class CheckboxRequiredValidator extends CustomFormController<bool?> {
   @override
   String? Function(bool? value)? get validator => (value) {
     if (value == null || value == false) {
@@ -321,8 +325,9 @@ class CheckboxRequiredController extends CustomFormController<bool?> {
 
 // Usage
 AutoFormFieldWrapper<bool?>(
-  formController: CheckboxRequiredController(),
-  builder: (field) => Row(
+  formController: CheckboxRequiredValidator(),
+  autovalidateMode: AutovalidateMode.onUserInteraction,
+  builder: (field, didChange) => Row(
     children: [
       Checkbox(
         value: _isChecked,
@@ -330,7 +335,7 @@ AutoFormFieldWrapper<bool?>(
           setState(() {
             _isChecked = value;
           });
-          field.didChange(value);
+          didChange(value); // Automatically calls field.didChange
         },
       ),
       const Text('Accept terms and conditions'),
@@ -344,7 +349,7 @@ AutoFormFieldWrapper<bool?>(
 ```dart
 enum Status { active, inactive, pending }
 
-class StatusController extends CustomFormController<Status?> {
+class StatusValidator extends CustomFormController<Status?> {
   @override
   String? Function(Status? value)? get validator => (value) {
     if (value == null) {
@@ -356,8 +361,9 @@ class StatusController extends CustomFormController<Status?> {
 
 // Usage
 AutoFormFieldWrapper<Status?>(
-  formController: StatusController(),
-  builder: (field) => DropdownButton<Status>(
+  formController: StatusValidator(),
+  autovalidateMode: AutovalidateMode.onUserInteraction,
+  builder: (field, didChange) => DropdownButton<Status>(
     value: _selectedStatus,
     items: Status.values.map((status) {
       return DropdownMenuItem(
@@ -369,7 +375,7 @@ AutoFormFieldWrapper<Status?>(
       setState(() {
         _selectedStatus = value;
       });
-      field.didChange(value);
+      didChange(value); // Automatically calls field.didChange
     },
   ),
 )
@@ -378,7 +384,7 @@ AutoFormFieldWrapper<Status?>(
 ### Date Picker Example
 
 ```dart
-class DateController extends CustomFormController<DateTime?> {
+class DateValidator extends CustomFormController<DateTime?> {
   @override
   String? Function(DateTime? value)? get validator => (value) {
     if (value == null) {
@@ -497,7 +503,7 @@ class _MyFormState extends State<MyForm> {
       child: Column(
         children: [
           MyTextFormField(
-            formController: PhoneFormController(),
+            formController: PhoneValidator(),
             decoration: InputDecoration(
               labelText: 'Phone Number',
               border: OutlineInputBorder(),
@@ -505,7 +511,7 @@ class _MyFormState extends State<MyForm> {
           ),
           SizedBox(height: 16),
           MyTextFormField(
-            formController: EmailFormController(),
+            formController: EmailValidator(),
             decoration: InputDecoration(
               labelText: 'Email',
               border: OutlineInputBorder(),
@@ -526,7 +532,7 @@ class _MyFormState extends State<MyForm> {
   }
 }
 
-class PhoneFormController extends FormController {
+class PhoneValidator extends FormController {
   @override
   String? Function(String? value)? get validator => (value) {
     if (value == null || value.isEmpty) {
@@ -544,7 +550,7 @@ class PhoneFormController extends FormController {
   TextInputType? get textInputType => TextInputType.phone;
 }
 
-class EmailFormController extends FormController {
+class EmailValidator extends FormController {
   @override
   String? Function(String? value)? get validator => (value) {
     if (value == null || value.isEmpty) {
@@ -601,8 +607,10 @@ This implementation shows how to create your own `MyTextFormField` that has the 
 | `formController` | `CustomFormController<T>?` | Generic form controller instance |
 | `focusNode` | `FocusNode?` | Custom focus node |
 | `validator` | `String? Function(T? value)?` | Custom validator function |
-| `builder` | `Widget Function(FormFieldState<T> field)` | Widget builder function |
+| `builder` | `Widget Function(FormFieldState<T> field, void Function(T? value) didChange)` | Widget builder function that receives field state and didChange callback |
+| `autovalidateMode` | `AutovalidateMode?` | When to validate the field (onUserInteraction, onSubmit, etc.) |
 | `errorWidget` | `Widget Function(String errorText)?` | Custom error widget builder |
+| `initialValue` | `T?` | Initial value for the field |
 
 ### Methods
 

@@ -8,13 +8,13 @@ import 'form_controller.dart';
 ///
 /// Example usage with checkbox:
 /// ```dart
-/// AutoFormField<bool?>(
+/// AutoFormFieldWrapper<bool?>(
 ///   formController: CheckboxController(),
-///   builder: (field) => Checkbox(
+///   builder: (field, didChange) => Checkbox(
 ///     value: _isChecked,
 ///     onChanged: (value) {
 ///       setState(() => _isChecked = value);
-///       field.didChange(value);
+///       didChange(value); // Automatically calls field.didChange
 ///     },
 ///   ),
 /// )
@@ -22,14 +22,14 @@ import 'form_controller.dart';
 ///
 /// Example usage with dropdown:
 /// ```dart
-/// AutoFormField<MyEnum?>(
+/// AutoFormFieldWrapper<MyEnum?>(
 ///   formController: DropdownController(),
-///   builder: (field) => DropdownButton<MyEnum>(
+///   builder: (field, didChange) => DropdownButton<MyEnum>(
 ///     value: _selectedValue,
 ///     items: [...],
 ///     onChanged: (value) {
 ///       setState(() => _selectedValue = value);
-///       field.didChange(value);
+///       didChange(value); // Automatically calls field.didChange
 ///     },
 ///   ),
 /// )
@@ -47,10 +47,11 @@ class AutoFormFieldWrapper<T> extends FormField<T> {
     super.key,
     this.formController,
     String? Function(T? value)? validator,
-    required Widget Function(FormFieldState<T> field) builder,
+    required Widget Function(FormFieldState<T> field, void Function(T? value) didChange) builder,
     this.focusNode,
     super.initialValue,
     this.errorWidget,
+    super.autovalidateMode,
   }) : super(
           validator: (value) {
             // Use custom validator if provided, otherwise use formController
@@ -81,13 +82,18 @@ class AutoFormFieldWrapper<T> extends FormField<T> {
               preparedFocusNode = focusNode;
             }
 
+            // Helper function that automatically calls didChange
+            void didChange(T? value) {
+              field.didChange(value);
+            }
+
             return Focus(
               focusNode: preparedFocusNode,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  builder(field),
+                  builder(field, didChange),
                   if (errorText != null) //
                     errorWidget?.call(errorText) ?? _DefaultErrorWidget(errorText: errorText),
                 ],
