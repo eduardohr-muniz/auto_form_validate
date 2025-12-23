@@ -332,3 +332,117 @@ extension FormControllerExtension on FormController {
     helper.resetErrorTracking();
   }
 }
+
+/// A generic form controller for validating any type of form field.
+///
+/// This controller is designed for use with dropdowns, date pickers, and other
+/// non-text form fields. It provides validation without text-specific features
+/// like formatters, regex filters, or text input types.
+///
+/// Example usage for dropdowns:
+/// ```dart
+/// enum MyEnum { option1, option2, option3 }
+///
+/// class MyDropdownController extends CustomFormController<MyEnum?> {
+///   @override
+///   String? Function(MyEnum? value)? get validator => (value) {
+///     if (value == null) {
+///       return 'Please select an option';
+///     }
+///     return null;
+///   };
+/// }
+/// ```
+///
+/// Example usage for date pickers:
+/// ```dart
+/// class DateController extends CustomFormController<DateTime?> {
+///   @override
+///   String? Function(DateTime? value)? get validator => (value) {
+///     if (value == null) {
+///       return 'Please select a date';
+///     }
+///     if (value.isBefore(DateTime.now())) {
+///       return 'Date must be in the future';
+///     }
+///     return null;
+///   };
+/// }
+/// ```
+abstract class CustomFormController<T> {
+  late final helper = CustomFormControllerHelper<T>(this);
+
+  /// [validator]
+  /// A function that validates the input value.
+  ///
+  /// By default, this returns `null`, indicating that there is no validation.
+  ///
+  /// Example:
+  /// ```dart
+  /// @override
+  /// String? Function(MyEnum? value)? get validator => (value) {
+  ///   if (value == null) {
+  ///     return 'Please select an option';
+  ///   }
+  ///   return null; // Valid input
+  /// };
+  /// ```
+  ///
+  String? Function(T? value)? get validator => null;
+}
+
+class CustomFormControllerHelper<T> {
+  CustomFormControllerHelper(this.formController);
+  final CustomFormController<T> formController;
+
+  FocusNode? _focusNode;
+
+  FocusNode prepareFocusNode(FocusNode? focusNode) {
+    _focusNode ??= focusNode ?? FocusNode();
+    return _focusNode!;
+  }
+
+  String? validate({required T? value, required FocusNode focusNode}) {
+    final error = formController.validator?.call(value);
+    _requestFocusOnError(isError: error, focusNode: focusNode);
+    return error;
+  }
+
+  void resetErrorTracking() {
+    _errorFocusNodes.clear();
+  }
+
+  void _requestFocusOnError({required String? isError, required FocusNode? focusNode}) {
+    if (focusNode == null) return;
+
+    if (isError != null) {
+      if (!_errorFocusNodes.contains(focusNode)) {
+        _errorFocusNodes.add(focusNode);
+      }
+    } else {
+      _errorFocusNodes.remove(focusNode);
+    }
+
+    if (_errorFocusNodes.isNotEmpty) {
+      final firstErrorNode = _errorFocusNodes.first;
+
+      Future.microtask(() {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (firstErrorNode.canRequestFocus) {
+            if (firstErrorNode.context != null) {
+              FocusScope.of(firstErrorNode.context!).unfocus();
+            }
+            firstErrorNode.requestFocus();
+            _errorFocusNodes.clear();
+          }
+        });
+      });
+    }
+  }
+}
+
+extension CustomFormControllerExtension<T> on CustomFormController<T> {
+  void resetErrorTracking() {
+    helper.resetErrorTracking();
+  }
+}
